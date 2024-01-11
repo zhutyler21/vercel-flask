@@ -1,35 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Image Upload</title>
-  <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: Arial, sans-serif;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-  </style>
+    <title>Image Processing App</title>
+    <link rel="stylesheet" type="text/css" href="../static/styles/main.css">
 </head>
 <body>
-  <form action="http://localhost:5000/upload_image" method="post" enctype="multipart/form-data">
-    <input type="file" name="file">
-    <button type="submit">Upload</button>
-  </form>
+    <div class="container">
+        <h1>Upload your Image</h1>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="file" name="image" accept="image/*">
+            <input type="submit">
+        </form>
+        {% if image %}
+        <div class="image-display">
+            <img src="../static/images/{{image}}" alt="processed image">
+            <a href="/download/{{image}}">Download Image</a>
+        </div>
+        {% endif %}
+    </div>
 </body>
 </html>
