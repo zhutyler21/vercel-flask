@@ -1,26 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- CSS only -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>Chat with GPT-3</title>
 </head>
 <body>
-    <div class="container">
-        <div class="row">
-            <div class="col-12 text-center my-5">
-                <h1>Welcome to My Blog!</h1>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12 text-center">
-                <img src="{{ url_for('static', filename='img/' + img_file) if img_file else '#' }}" class="img-fluid" alt="Image">
-            </div>
-        </div>
+    <div id="chatbox">
+        <!-- 这里将显示对话记录 -->
     </div>
+    <form action="/reply" method="post">
+        <input type="hidden" id="apiKey" name="apiKey" value="">
+        <input type="text" id="content" name="content" required>
+        <button type="submit">Send</button>
+    </form>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        var apiKey = localStorage.getItem('apiKey');
+        if (!apiKey) {
+            apiKey = prompt('Please enter your OpenAI API key:');
+            localStorage.setItem('apiKey', apiKey);
+        }
+        $('#apiKey').val(apiKey);
 
-    <!-- JS, Popper.js, and jQuery -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        $('form').on('submit', function(e) {
+            e.preventDefault(); // prevent page refresh
+            $.ajax({
+                url: '/reply',
+                method: 'POST',
+                data: $(this).serialize(), // this includes apiKey
+                success: function(data) {
+                    $('#chatbox').append('<p>You: ' + $('#content').val() + '</p>');
+                    $('#chatbox').append('<p>GPT-3: ' + data.content + '</p>');
+                    $('#content').val(''); // clear input box
+                }
+            });
+        });
+    });
+    </script>
 </body>
 </html>
