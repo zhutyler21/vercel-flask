@@ -2,41 +2,71 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Chat with GPT-3</title>
-</head>
-<body>
-    <div id="chatbox">
-        <!-- 这里将显示对话记录 -->
-    </div>
-    <form action="/reply" method="post">
-        <input type="hidden" id="apiKey" name="apiKey" value="">
-        <input type="text" id="content" name="content" required>
-        <button type="submit">Send</button>
-    </form>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script>
-    $(document).ready(function() {
-        var apiKey = localStorage.getItem('apiKey');
-        if (!apiKey) {
-            apiKey = prompt('Please enter your OpenAI API key:');
-            localStorage.setItem('apiKey', apiKey);
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Generator Interface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        #outputImage {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            object-fit: contain;
         }
-        $('#apiKey').val(apiKey);
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="inputPrompt" class="block text-lg font-medium text-gray-700">Input Prompt here:</label>
+                <textarea id="inputPrompt" rows="4" class="mt-1 block w-full p-2.5 text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                <button id="generateButton" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">Generate Image</button>
+            </div>
+            <div>
+                <label class="block text-lg font-medium text-gray-700">Output the generated image here.</label>
+                <div id="imageContainer" class="mt-1 p-2.5 bg-white rounded-lg border border-gray-300">
+                    <img id="outputImage" src="" alt="Generated Image" class="hidden">
+                </div>
+            </div>
+        </div>
+    </div>
 
-        $('form').on('submit', function(e) {
-            e.preventDefault(); // prevent page refresh
-            $.ajax({
-                url: '/reply',
-                method: 'POST',
-                data: $(this).serialize(), // this includes apiKey
-                success: function(data) {
-                    $('#chatbox').append('<p>You: ' + $('#content').val() + '</p>');
-                    $('#chatbox').append('<p>GPT-3: ' + data.content + '</p>');
-                    $('#content').val(''); // clear input box
-                }
-            });
+    <script>
+        const generateButton = document.getElementById('generateButton');
+        const inputPrompt = document.getElementById('inputPrompt');
+        const outputImage = document.getElementById('outputImage');
+        const imageContainer = document.getElementById('imageContainer');
+
+        generateButton.addEventListener('click', function() {
+            const promptText = inputPrompt.value.trim();
+            if (promptText === '') {
+                alert('Please enter a prompt.');
+                return;
+            }
+
+            const apiKey = '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';
+            const headers = {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            };
+
+            const data = {
+                prompt: promptText,
+                size: "1024x1024"
+            };
+
+            axios.post('https://api.openai.com/v1/images/generations', data, { headers: headers })
+                .then(response => {
+                    const imageUrl = response.data.data[0].url;
+                    outputImage.src = imageUrl;
+                    outputImage.classList.remove('hidden');
+                })
+                .catch(error => {
+                    console.error('Error generating image:', error);
+                    alert('Failed to generate image. Please try again.');
+                });
         });
-    });
     </script>
 </body>
 </html>

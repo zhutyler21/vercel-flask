@@ -1,6 +1,4 @@
-<<<<<<< HEAD
-from flask import Flask, render_template, request
-from openai import OpenAI
+from flask import Flask, jsonify, request, render_template
 
 app = Flask(__name__)
 
@@ -8,42 +6,20 @@ app = Flask(__name__)
 def home():
     return render_template('index.html')
 
-@app.route('/reply', methods=['POST'])
-def reply():
-    apiKey = request.form['apiKey']
-    content = request.form['content']
-    client = OpenAI(apiKey)
-    completion = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": content}
-        ]
-    )
-    message = completion.choices[0].message
-    return message
+@app.route('/generate-image', methods=['POST'])
+def generate_image():
+    data = request.get_json()
+    headers = {
+        'Authorization': 'Bearer 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',
+        'Content-Type': 'application/json'
+    }
 
-if __name__ == '__main__':
-    app.run(debug=True)
-=======
-import os
-from flask import Flask, render_template
+    response = requests.post('https://api.openai.com/v1/images/generations', json=data, headers=headers)
+    
+    if response.status_code == 200:
+        return jsonify(response.json()), 200
+    else:
+        return jsonify({"message": "Failed to generate image."}), 400
 
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    # Get list of files in /static/img
-    img_files = os.listdir(os.path.join(app.root_path, 'static/img'))
-
-    # Filter out non-image file types if necessary
-    img_files = [img for img in img_files if img.endswith(('.png', '.jpg', '.jpeg', '.gif'))]
-
-    # Select the first image file
-    img_file = img_files[0] if img_files else None
-
-    return render_template('index.html', img_file=img_file)
-
-if __name__ == '__main__':
-    app.run(debug=True)
->>>>>>> 9e4588d740b521069291d68f29ff8133b89d9b11
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000)
