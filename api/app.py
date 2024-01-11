@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, send_from_directory
 from PIL import Image, ImageFilter
+from jinja2 import escape
 import os
 
 app = Flask(__name__)
