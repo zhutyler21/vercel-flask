@@ -1,13 +1,26 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- CSS only -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="center">
-        <img src="{{ url_for('static', filename='img/' + img_file) if img_file else '#' }}" alt="Profile Picture">
-        <p>Welcome to my personal website!</p>
-        <p>You can contact me at: zhutyler21@gmail.com</p>
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center my-5">
+                <h1>Welcome to My Blog!</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12 text-center">
+                <img src="{{ url_for('static', filename='img/' + img_file) if img_file else '#' }}" class="img-fluid" alt="Image">
+            </div>
+        </div>
     </div>
+
+    <!-- JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 </html>
