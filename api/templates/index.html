@@ -1,57 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-    ... // 省略了部分代码
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPT 聊天窗口</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        .chat-container {
+            max-width: 600px;
+            margin: 0 auto;
+            border-right: 2px solid #ddd;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .messages {
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            max-width: 75%;
+        }
+        .user-message {
+            background-color: #f8f9fa;
+            margin-left: auto;
+            text-align: right;
+        }
+        .bot-message {
+            background-color: #e2e8f0;
+            text-align: left;
+        }
+        .input-area {
+            padding: 1rem;
+            border-top: 1px solid #ddd;
+        }
+    </style>
 </head>
 <body class="bg-gray-100">
-    ...
-    <div id="apikeyModal" class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                            Enter your OpenAI API Key
-                        </h3>
-                        <div class="mt-2">
-                            <input type="text" id="apikeyInput" class="w-full border rounded-full py-2 px-4" placeholder="Enter your API key here...">
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button type="button" onclick="setApiKey()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
-                        Confirm
-                    </button>
-                </div>
-            </div>
+    <div class="chat-container bg-white shadow-lg rounded-lg mt-8">
+        <div class="border-b px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-semibold">GPT 聊天窗口</h1>
+            <span class="text-sm text-gray-600">Powered by Tyler Coman</span>
+        </div>
+        <div class="messages" id="messages">
+            <!-- 信息会在这里显示 -->
+        </div>
+        <div class="input-area">
+            <input type="text" id="messageInput" class="border rounded-full w-full py-2 px-4" placeholder="在这里输入你的消息..." onkeydown="if (event.key === 'Enter') sendMessage()">
+            <button onclick="sendMessage()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full mt-2 float-right">
+                发送
+            </button>
         </div>
     </div>
+
     <script>
-        let apikey = "";
-        const apikeyModal = document.getElementById('apikeyModal');
-        const apikeyInput = document.getElementById('apikeyInput');
-        function setApiKey() {
-            apikey = apikeyInput.value;
-            apikeyModal.style.display = "none";
+        const messagesContainer = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+
+        async function appendMessage(text, isUser) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', isUser ? 'user-message' : 'bot-message');
+            messageDiv.textContent = text;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
+
         async function sendMessage() {
-            ...
+            const text = messageInput.value.trim();
+            if (text === '') return;
+
+            appendMessage(text, true);
+            messageInput.value = '';
+
+            const { value: apikey } = await Swal.fire({
+                title: 'OpenAI API 密钥输入',
+                input: 'text',
+                inputAttributes: {
+                    autocapitalize: 'off'
+                },
+                showCancelButton: false,
+                showLoaderOnConfirm: true,
+                preConfirm: (key) => {
+                    if (!key) {
+                        return Swal.showValidationMessage('API 密钥不能为空');
+                    }
+                },
+                allowOutsideClick: false,
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'API 密钥不能为空';
+                    }
+                }
+            });
+
             try {
-                const response = await axios.post('http://localhost:5000/api/chat', {
-                    message: text,
-                    api_key: apikey
+                const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+                    model: "gpt-3.5-turbo",
+                    messages: [{ role: "user", content: text }]
+                }, {
+                    headers: {
+                        'Authorization': `Bearer ${apikey}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
 
-                const message = response.data.response;
+                const message = response.data.choices[0].message.content;
                 appendMessage(message, false);
             } catch (error) {
-                ...
+                console.error('发送消息时出错:', error);
+                appendMessage('错误：无法获取回应。', false);
             }
-        }
-        window.onload = function() {
-            apikeyModal.style.display = "block";
         }
     </script>
 </body>
