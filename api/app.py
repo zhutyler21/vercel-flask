@@ -1,25 +1,21 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, request, jsonify
+import openai
 
 app = Flask(__name__)
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    data = request.json
+    user_message = data["message"]
+    openai.api_key = data["api_key"]
 
-@app.route('/generate-image', methods=['POST'])
-def generate_image():
-    data = request.get_json()
-    headers = {
-        'Authorization': 'Bearer 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',
-        'Content-Type': 'application/json'
-    }
+    response = openai.Completion.create(
+    engine="text-davinci-002",
+    prompt=user_message,
+    max_tokens=150
+    )
 
-    response = requests.post('https://api.openai.com/v1/images/generations', json=data, headers=headers)
-    
-    if response.status_code == 200:
-        return jsonify(response.json()), 200
-    else:
-        return jsonify({"message": "Failed to generate image."}), 400
+    return jsonify({"response": response["choices"][0]["text"]["content"]}), 200
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host="0.0.0.0", port=5000)  # 运行在localhost的5000端口上

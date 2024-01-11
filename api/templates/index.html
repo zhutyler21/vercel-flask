@@ -1,72 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Generator Interface</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <style>
-        #outputImage {
-            width: 100%;
-            height: auto;
-            max-height: 400px;
-            object-fit: contain;
-        }
-    </style>
+    ... // 省略了部分代码
 </head>
 <body class="bg-gray-100">
-    <div class="container mx-auto p-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label for="inputPrompt" class="block text-lg font-medium text-gray-700">Input Prompt here:</label>
-                <textarea id="inputPrompt" rows="4" class="mt-1 block w-full p-2.5 text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"></textarea>
-                <button id="generateButton" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">Generate Image</button>
-            </div>
-            <div>
-                <label class="block text-lg font-medium text-gray-700">Output the generated image here.</label>
-                <div id="imageContainer" class="mt-1 p-2.5 bg-white rounded-lg border border-gray-300">
-                    <img id="outputImage" src="" alt="Generated Image" class="hidden">
+    ...
+    <div id="apikeyModal" class="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                            Enter your OpenAI API Key
+                        </h3>
+                        <div class="mt-2">
+                            <input type="text" id="apikeyInput" class="w-full border rounded-full py-2 px-4" placeholder="Enter your API key here...">
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="setApiKey()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Confirm
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-
     <script>
-        const generateButton = document.getElementById('generateButton');
-        const inputPrompt = document.getElementById('inputPrompt');
-        const outputImage = document.getElementById('outputImage');
-        const imageContainer = document.getElementById('imageContainer');
-
-        generateButton.addEventListener('click', function() {
-            const promptText = inputPrompt.value.trim();
-            if (promptText === '') {
-                alert('Please enter a prompt.');
-                return;
-            }
-
-            const apiKey = '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';
-            const headers = {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json'
-            };
-
-            const data = {
-                prompt: promptText,
-                size: "1024x1024"
-            };
-
-            axios.post('https://api.openai.com/v1/images/generations', data, { headers: headers })
-                .then(response => {
-                    const imageUrl = response.data.data[0].url;
-                    outputImage.src = imageUrl;
-                    outputImage.classList.remove('hidden');
-                })
-                .catch(error => {
-                    console.error('Error generating image:', error);
-                    alert('Failed to generate image. Please try again.');
+        let apikey = "";
+        const apikeyModal = document.getElementById('apikeyModal');
+        const apikeyInput = document.getElementById('apikeyInput');
+        function setApiKey() {
+            apikey = apikeyInput.value;
+            apikeyModal.style.display = "none";
+        }
+        async function sendMessage() {
+            ...
+            try {
+                const response = await axios.post('http://localhost:5000/api/chat', {
+                    message: text,
+                    api_key: apikey
                 });
-        });
+
+                const message = response.data.response;
+                appendMessage(message, false);
+            } catch (error) {
+                ...
+            }
+        }
+        window.onload = function() {
+            apikeyModal.style.display = "block";
+        }
     </script>
 </body>
 </html>
