@@ -10,7 +10,7 @@ def home():
 def generate_image():
     data = request.get_json()
     headers = {
-        'Authorization': 'Bearer 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',
+        'Authorization': 'Bearer ',
         'Content-Type': 'application/json'
     }
 
